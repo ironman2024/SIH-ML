@@ -4,7 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const DiseaseDetailsScreen = ({ route, navigation }) => {
-  const { disease } = route.params;
+  const { disease } = route.params || {};
+
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -30,10 +31,14 @@ const DiseaseDetailsScreen = ({ route, navigation }) => {
         <Text style={styles.sectionTitle}>Description</Text>
         <Text style={styles.descriptionText}>{disease.description || 'No description available.'}</Text>
 
-        <TouchableOpacity style={styles.precautionButton} onPress={() => console.log('Check precautions')}>
-          <Ionicons name="checkmark-circle-outline" size={28} color="#FFF" />
-          <Text style={styles.precautionButtonText}>Check for Precautions</Text>
-        </TouchableOpacity>
+        <TouchableOpacity
+  style={styles.precautionButton}
+  onPress={() => navigation.navigate('PrecautionsScreen', { disease })} // Assuming there's a precautions screen
+>
+  <Ionicons name="checkmark-circle-outline" size={28} color="#FFF" />
+  <Text style={styles.precautionButtonText}>Check for Precautions</Text>
+</TouchableOpacity>
+
       </ScrollView>
     </SafeAreaView>
   );

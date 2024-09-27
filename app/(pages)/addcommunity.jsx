@@ -12,16 +12,16 @@ import {
 import { initializeApp } from 'firebase/app';
 import { getStorage, ref, uploadBytes } from 'firebase/storage';
 import * as ImagePicker from 'expo-image-picker';
-import { useRouter } from 'expo-router'; // Import useRouter
+import { useRouter } from 'expo-router';
 
 // Firebase client-side config (public)
 const firebaseConfig = {
-  apiKey: "AIzaSyAT-NI6jaIocQ2XOjSmZwDeNEJyng3BV3I",
-  authDomain: "nector-28874.firebaseapp.com",
-  projectId: "nector-28874",
-  storageBucket: "nector-28874.appspot.com",
-  messagingSenderId: "946881652909",
-  appId: "1:946881652909:web:e7a5e3ef224061484c3e24",
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID",
 };
 
 // Initialize Firebase
@@ -32,54 +32,59 @@ const UploadToFirebase = () => {
   const [title, setTitle] = useState('');
   const [image, setImage] = useState(null);
   const [textContent, setTextContent] = useState('');
-  const router = useRouter(); // Initialize the router
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const handleImageChange = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    
-    if (permissionResult.granted === false) {
+
+    if (!permissionResult.granted) {
       Alert.alert("Permission to access camera roll is required!");
       return;
     }
 
     const result = await ImagePicker.launchImageLibraryAsync();
-    
+
     if (!result.cancelled) {
       setImage(result.assets[0]);
     }
   };
 
   const handleUpload = async () => {
-    if (image && textContent && title) {
-      const folderRef = ref(storage, `${title}/`);
-
-      try {
-        // Upload Image
-        const imageRef = ref(folderRef, image.fileName);
-        await uploadBytes(imageRef, image.uri);
-        console.log(`${image.fileName} uploaded successfully.`);
-
-        // Upload Raw Text as Blob
-        const textBlob = new Blob([textContent], { type: 'text/plain' });
-        const textRef = ref(folderRef, 'text_content.txt');
-        await uploadBytes(textRef, textBlob);
-        console.log("Text content uploaded successfully.");
-
-        Alert.alert("Upload Successful", "Your image and text have been uploaded.");
-
-        // Reset state after upload
-        setImage(null);
-        setTextContent('');
-        setTitle('');
-
-        // Navigate back to Community screen
-        router.push('/community'); // Change the route as needed
-      } catch (error) {
-        console.error("Error uploading:", error);
-        Alert.alert("Upload Failed", "There was an issue uploading your content.");
-      }
-    } else {
+    if (!title || !textContent || !image) {
       Alert.alert("Please fill all fields and select an image.");
+      return;
+    }
+
+    setIsLoading(true);
+    const folderRef = ref(storage, `${title}/`);
+
+    try {
+      // Generate a unique image file name
+      const imageFileName = `${Date.now()}_${image.fileName}`;
+      const imageRef = ref(folderRef, imageFileName);
+      await uploadBytes(imageRef, await fetch(image.uri).then(res => res.blob()));
+
+      console.log(`${imageFileName} uploaded successfully.`);
+
+      // Upload Raw Text as Blob
+      const textBlob = new Blob([textContent], { type: 'text/plain' });
+      const textRef = ref(folderRef, 'text_content.txt');
+      await uploadBytes(textRef, textBlob);
+      console.log("Text content uploaded successfully.");
+
+      Alert.alert("Upload Successful", "Your image and text have been uploaded.");
+
+      // Reset state after upload
+      setImage(null);
+      setTextContent('');
+      setTitle('');
+    } catch (error) {
+      console.error("Error uploading:", error);
+      Alert.alert("Upload Failed", "There was an issue uploading your content.");
+    } finally {
+      setIsLoading(false);
+      router.push('/community'); // Change the route as needed
     }
   };
 
@@ -91,8 +96,9 @@ const UploadToFirebase = () => {
         placeholder="Enter title for folder"
         value={title}
         onChangeText={setTitle}
+        accessibilityLabel="Title for folder"
       />
-      <TouchableOpacity style={styles.button} onPress={handleImageChange}>
+      <TouchableOpacity style={styles.button} onPress={handleImageChange} accessible>
         <Text style={styles.buttonText}>Choose Image</Text>
       </TouchableOpacity>
       {image && (
@@ -107,9 +113,17 @@ const UploadToFirebase = () => {
         value={textContent}
         onChangeText={setTextContent}
         multiline
+        accessibilityLabel="Text content"
       />
-      <TouchableOpacity style={styles.uploadButton} onPress={handleUpload}>
-        <Text style={styles.uploadButtonText}>Upload to Firebase</Text>
+      <TouchableOpacity
+        style={styles.uploadButton}
+        onPress={handleUpload}
+        disabled={isLoading}
+        accessible
+      >
+        <Text style={styles.uploadButtonText}>
+          {isLoading ? 'Uploading...' : 'Upload to Firebase'}
+        </Text>
       </TouchableOpacity>
     </ScrollView>
   );

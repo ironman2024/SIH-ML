@@ -1,36 +1,36 @@
-import { View, Text } from 'react-native'
-import { Stack } from 'expo-router'
-import { StatusBar } from 'expo-status-bar'
+import { View, Text } from 'react-native';
+import { Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 
 const AuthLayout = () => {
   return (
     <>
       <Stack>
         <Stack.Screen
-          name='chatbot'
+          name='Chatbot'  // Adjusted for consistent naming
           options={{
-            headerShown: false
+            headerShown: false,
           }}  
         />
 
         <Stack.Screen
-          name='addcommunity'
+          name='AddCommunity'  // Adjusted for consistent naming
           options={{
-            headerShown: false
-          }}  
-        />
-        <Stack.Screen
-          name='content'
-          options={{
-            headerShown: false
+            headerShown: false,
           }}  
         />
         
+        <Stack.Screen
+          name='Content'  // Adjusted for consistent naming
+          options={{
+            headerShown: false,
+          }}  
+        />
       </Stack>
 
-      <StatusBar style='dark'/>
+      <StatusBar style='dark' />
     </>
-  )
-}
+  );
+};
 
-export default AuthLayout
+export default AuthLayout;

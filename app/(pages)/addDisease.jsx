@@ -1,17 +1,31 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 const AddDiseaseScreen = ({ navigation }) => {
   const [diseaseName, setDiseaseName] = useState('');
-  const [date, setDate] = useState('');
+  const [date, setDate] = useState(new Date());
+  const [dateString, setDateString] = useState('');
   const [description, setDescription] = useState('');
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const handleAddDisease = () => {
-    // Handle logic for adding the disease
-    console.log('Disease added:', { diseaseName, date, description });
+    if (!diseaseName || !dateString || !description) {
+      Alert.alert('Validation Error', 'Please fill in all fields.');
+      return;
+    }
+    console.log('Disease added:', { diseaseName, date: dateString, description });
     navigation.goBack();
+  };
+
+  const onDateChange = (event, selectedDate) => {
+    const currentDate = selectedDate || date;
+    setShowDatePicker(false);
+    setDate(currentDate);
+    const formattedDate = currentDate.toLocaleDateString('en-GB'); // Format to DD/MM/YYYY
+    setDateString(formattedDate);
   };
 
   return (
@@ -32,13 +46,9 @@ const AddDiseaseScreen = ({ navigation }) => {
 
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Date</Text>
-          <TextInput
-            style={styles.input}
-            value={date}
-            onChangeText={setDate}
-            placeholder="DD/MM/YYYY"
-            placeholderTextColor="#888"
-          />
+          <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.input}>
+            <Text style={styles.dateText}>{dateString || 'DD/MM/YYYY'}</Text>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.inputContainer}>
@@ -57,6 +67,15 @@ const AddDiseaseScreen = ({ navigation }) => {
           <Ionicons name="add-circle-outline" size={28} color="#FFF" />
           <Text style={styles.addButtonText}>Add to Calendar</Text>
         </TouchableOpacity>
+
+        {showDatePicker && (
+          <DateTimePicker
+            value={date}
+            mode="date"
+            display="default"
+            onChange={onDateChange}
+          />
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -95,6 +114,12 @@ const styles = StyleSheet.create({
     color: '#333',
     borderWidth: 1,
     borderColor: '#DDD',
+  },
+  dateText: {
+    color: '#333',
+    fontSize: 16,
+    fontFamily: 'Poppins-Regular',
+    padding: 12,
   },
   textArea: {
     height: 100,

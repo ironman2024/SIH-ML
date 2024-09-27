@@ -95,7 +95,9 @@ const Explore = () => {
           onRequestClose={() => setModalVisible(false)}
         >
           <View style={styles.modalView}>
-            <Text style={styles.modalTitle}>{selectedCategory?.name}</Text>
+            <Text style={styles.modalTitle}>{selectedCategory?.name}</Text> // Correctly wrapped
+            <Text style={styles.modalContent}>{selectedCategory?.details}</Text> // Correctly wrapped
+            <Text style={styles.noResultsText}>No diseases found for your search</Text> // Correctly wrapped
             <Image source={selectedCategory?.image} style={styles.modalImage} />
             <Text style={styles.modalContent}>
               {selectedCategory?.details}

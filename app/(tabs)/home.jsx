@@ -1,14 +1,55 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Redirect, router } from 'expo-router';
 import { useUser } from '@clerk/clerk-expo';
+import * as tf from '@tensorflow/tfjs';
+import '@tensorflow/tfjs-react-native';
+import { bundleResourceIO } from '@tensorflow/tfjs-react-native';
 
 import Weather from './../../components/weather';
 
 const HomeScreen = () => {
   const { user, isLoaded } = useUser();
+  const [model, setModel] = useState(null);
+  const [loadingModel, setLoadingModel] = useState(true);
+
+  useEffect(() => {
+    const loadModel = async () => {
+      await tf.ready();
+      await tf.setBackend('webgl'); // Ensure you have a WebGL backend
+
+      // Load the model from the specified location
+      const loadedModel = await bundleResourceIO(require('../assets/model/model.json'));
+      setModel(loadedModel);
+      setLoadingModel(false);
+      console.log('Model loaded!');
+    };
+
+    loadModel();
+  }, []);
+
+  // Function to preprocess image to tensor
+  const preprocessImageToTensor = (image) => {
+    const imgTensor = tf.browser.fromPixels(image); // Use appropriate method to convert image
+    const resized = tf.image.resizeBilinear(imgTensor, [224, 224]); // Resize to (224, 224)
+    const normalized = resized.div(255.0); // Normalize to [0, 1]
+    return normalized.expandDims(0); // Add batch dimension
+  };
+
+  // Function to handle image prediction
+  const handleImagePrediction = async (image) => {
+    if (!model) {
+      console.log('Model not loaded');
+      return;
+    }
+
+    const imageTensor = preprocessImageToTensor(image); // Preprocess image
+    const predictions = await model.predict(imageTensor); // Use 'predict' instead of 'classify'
+    console.log(predictions);
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
@@ -16,41 +57,44 @@ const HomeScreen = () => {
           fontSize: 24,
           fontWeight: 'bold',
           paddingVertical: 20,
-          textAlign:'center',
+          textAlign: 'center',
           color: '#4caf50',
         }}>
-         Welcome, {user?.fullName}
+          Welcome, {user?.fullName}
         </Text>
         {/* Top Section: Location */}
         <TopSection />
-
+  
         {/* Weather Update Section */}
-        <Weather/>
-
+        <Weather />
+  
         {/* Crop Alerts Section */}
         <CropAlerts />
-
+  
         {/* Spreading Diseases Section */}
         <SectionHeader title="Spreading Diseases" />
         <DiseaseCardScroll />
-
+  
         {/* Farming Tips Section */}
         <SectionHeader title="Farming Tips" />
         <FarmingTips />
-
+  
         {/* Contact Helpline Section */}
         <ContactHelpline />
+        
+        {/* Load model status */}
+        {loadingModel && <Text>Loading model...</Text>}  {/* Correctly wrapped in <Text> */}
       </ScrollView>
-
+  
       {/* Floating Chatbot Icon */}
       <TouchableOpacity
         style={styles.chatbotButton}
-        onPress={() => router.push('/chatbot')} // Route to chatbot
+        onPress={() => router.push('/chatbot')}
       >
         <Ionicons name="chatbubbles" size={30} color="#FFFFFF" />
       </TouchableOpacity>
     </SafeAreaView>
-  );
+  );  
 };
 
 // Top Section: Location and Icon
@@ -197,170 +241,124 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   locationIcon: {
-    marginRight: 8,
+    marginRight: 10,
   },
   locationText: {
     fontSize: 18,
-    fontFamily: 'Poppins-SemiBold',
-    color: '#333', // Darker color for better readability
+    fontWeight: 'bold',
   },
   weatherContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F5F5F5',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 2,
+    marginVertical: 16,
   },
   weatherTextContainer: {
     marginLeft: 10,
   },
   weatherText: {
-    fontSize: 18,
-    color: '#333',
-    fontFamily: 'Poppins-SemiBold',
+    fontSize: 20,
+    fontWeight: 'bold',
   },
   weatherDetails: {
     fontSize: 14,
-    color: '#888',
-    fontFamily: 'Poppins-Regular',
+    color: '#757575',
   },
   alertContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF3F3',
-    padding: 12,
-    borderRadius: 12,
-    marginBottom: 24,
+    marginVertical: 16,
   },
   alertTextContainer: {
     marginLeft: 10,
   },
   alertTitle: {
-    fontSize: 16,
+    fontSize: 18,
+    fontWeight: 'bold',
     color: '#E53935',
-    fontFamily: 'Poppins-SemiBold',
   },
   alertDetails: {
     fontSize: 14,
-    color: '#333',
-    fontFamily: 'Poppins-Regular',
+    color: '#757575',
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginVertical: 20,
   },
   sectionTitle: {
-    fontSize: 20,
-    color: '#333',
-    fontFamily: 'Poppins-SemiBold',
+    fontSize: 22,
+    fontWeight: 'bold',
   },
   seeAllText: {
     color: '#4CAF50',
-    fontSize: 14,
-    fontFamily: 'Poppins-SemiBold',
   },
   diseaseCardScroll: {
-    marginVertical: 12,
+    marginBottom: 20,
   },
   diseaseCard: {
-    backgroundColor: '#FFF',
-    borderRadius: 16,
-    padding: 16,
-    marginRight: 16,
-    width: 250,
-    borderWidth: 1.5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 3,
+    borderWidth: 2,
+    borderRadius: 12,
+    padding: 10,
+    width: 200,
+    marginRight: 10,
   },
   diseaseHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
   },
   diseaseTitle: {
     fontSize: 18,
-    fontFamily: 'Poppins-SemiBold',
-    marginLeft: 8,
+    fontWeight: 'bold',
+    marginLeft: 10,
   },
   diseaseImage: {
-    width: '100%',
-    height: 120,
+    height: 100,
     borderRadius: 10,
     marginVertical: 10,
   },
   diseaseSubtitle: {
-    fontSize: 16,
-    fontFamily: 'Poppins-Regular',
-    color: '#888',
+    fontSize: 14,
+    color: '#757575',
   },
   diseaseDescription: {
-    fontSize: 14,
-    fontFamily: 'Poppins-Regular',
-    color: '#333',
-    marginTop: 8,
+    fontSize: 12,
+    color: '#BDBDBD',
   },
   readMoreButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 10,
   },
   readMoreText: {
     fontSize: 14,
-    marginRight: 4,
-    fontFamily: 'Poppins-Regular',
   },
   tipsScroll: {
-    marginVertical: 12,
+    marginBottom: 20,
   },
   tipCard: {
     borderRadius: 10,
-    padding: 16,
-    marginRight: 16,
-    width: 180,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 2,
+    padding: 10,
+    width: 150,
+    marginRight: 10,
   },
   tipTitle: {
     fontSize: 16,
+    fontWeight: 'bold',
     color: '#FFF',
-    fontFamily: 'Poppins-SemiBold',
-    marginTop: 8,
   },
   tipDescription: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#FFF',
-    fontFamily: 'Poppins-Regular',
-    textAlign: 'center',
-    marginTop: 4,
   },
   contactContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E8F5E9',
-    padding: 12,
-    borderRadius: 12,
-    marginBottom: 20,
+    marginVertical: 20,
   },
   contactText: {
+    fontSize: 18,
     marginLeft: 10,
-    fontSize: 16,
-    color: '#4CAF50',
-    fontFamily: 'Poppins-SemiBold',
   },
   chatbotButton: {
     position: 'absolute',
@@ -368,14 +366,7 @@ const styles = StyleSheet.create({
     right: 30,
     backgroundColor: '#4CAF50',
     borderRadius: 50,
-    padding: 16,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
+    padding: 15,
   },
 });
 

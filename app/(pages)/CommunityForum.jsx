@@ -7,8 +7,6 @@ import {
   TouchableOpacity,
   Modal,
   TextInput,
-  Button,
-  Image,
   ScrollView,
   Pressable,
 } from 'react-native';
@@ -18,7 +16,7 @@ const post = {
   title: 'Panama Disease Cure',
   description:
     'Hey everyone, my banana plantation has been hit by Panama disease. Has anyone successfully treated their crops? I’m looking for solutions that don’t involve destroying my entire plantation.',
-  imageUrl: 'https://example.com/banana-disease.jpg', // Replace with an actual image URL
+  imageUrl: 'https://example.com/banana-disease.jpg',
   comments: [
     {
       id: '1',
@@ -37,16 +35,25 @@ const CommunityForum = () => {
   const [contributionModalVisible, setContributionModalVisible] = useState(false);
   const [contributionText, setContributionText] = useState('');
   const [location, setLocation] = useState('');
-  const [name, setName] = useState('Siddhesh Anokar'); // Default name shown in the modal
+  const [name, setName] = useState('Siddhesh Anokar'); // Default name
+
+  const [comments, setComments] = useState(post.comments); // State for comments
 
   const handleContribute = () => {
     setContributionModalVisible(true);
   };
 
   const handleSubmitContribution = () => {
-    // Submit contribution logic here
-    setContributionModalVisible(false);
-    setContributionText('');
+    if (contributionText.trim()) {
+      const newComment = {
+        id: (comments.length + 1).toString(),
+        name,
+        text: contributionText,
+      };
+      setComments([...comments, newComment]); // Add new comment to state
+      setContributionModalVisible(false);
+      setContributionText('');
+    }
   };
 
   const renderComment = ({ item }) => (
@@ -58,34 +65,26 @@ const CommunityForum = () => {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>{post.title}</Text>
       </View>
 
-      {/* Main Content */}
       <ScrollView style={styles.content}>
-        {/* Post Image */}
         <Image source={{ uri: post.imageUrl }} style={styles.postImage} />
-
-        {/* Post Title & Description */}
         <Text style={styles.postTitle}>{post.title}</Text>
         <Text style={styles.postDescription}>{post.description}</Text>
 
-        {/* Comments Section */}
         <FlatList
-          data={post.comments}
+          data={comments}
           keyExtractor={(item) => item.id}
           renderItem={renderComment}
         />
       </ScrollView>
 
-      {/* Contribute Button */}
       <TouchableOpacity style={styles.contributeButton} onPress={handleContribute}>
         <Text style={styles.contributeButtonText}>Contribute</Text>
       </TouchableOpacity>
 
-      {/* Contribution Modal */}
       <Modal
         visible={contributionModalVisible}
         animationType="slide"
@@ -101,19 +100,21 @@ const CommunityForum = () => {
               </TouchableOpacity>
             </View>
 
-            {/* Location Input */}
             <Pressable style={styles.inputRow} onPress={() => console.log('Select Location')}>
               <Text style={styles.inputLabel}>Location</Text>
-              <Text style={styles.inputText}>Select Location</Text>
+              <Text style={styles.inputText}>{location || 'Select Location'}</Text>
             </Pressable>
 
-            {/* Name Input (Static for Now) */}
             <View style={styles.inputRow}>
               <Text style={styles.inputLabel}>Your Name</Text>
-              <Text style={styles.inputText}>{name}</Text>
+              <TextInput
+                style={styles.inputText}
+                value={name}
+                onChangeText={setName}
+                editable
+              />
             </View>
 
-            {/* Contribution Text Input */}
             <View style={styles.textAreaContainer}>
               <Text style={styles.inputLabel}>Your Thoughts</Text>
               <TextInput
@@ -125,7 +126,6 @@ const CommunityForum = () => {
               />
             </View>
 
-            {/* Contribute Button */}
             <TouchableOpacity style={styles.modalContributeButton} onPress={handleSubmitContribution}>
               <Text style={styles.modalContributeButtonText}>Contribute</Text>
             </TouchableOpacity>
@@ -236,6 +236,8 @@ const styles = StyleSheet.create({
   inputText: {
     fontSize: 16,
     color: '#000',
+    flex: 1,
+    marginLeft: 10,
   },
   textAreaContainer: {
     marginBottom: 20,

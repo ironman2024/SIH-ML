@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, Image, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { getStorage, ref, listAll, getDownloadURL } from 'firebase/storage';
 import { initializeApp } from 'firebase/app';
-import { useRoute } from '@react-navigation/native';
+import { useRoute, useNavigation } from '@react-navigation/native'; // Import useNavigation
 
 // Firebase client-side config (public)
 const firebaseConfig = {
@@ -20,7 +20,8 @@ const storage = getStorage(app);
 
 const Content = () => {
   const route = useRoute();
-  const { folder } = route.params; // Ensure that 'params' is accessed from the route
+  const navigation = useNavigation(); // Place it here
+  const { folder } = route.params;
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -73,9 +74,10 @@ const Content = () => {
           contentContainerStyle={styles.list}
         />
       )}
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+     <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
         <Text style={styles.backButtonText}>Back to Folders</Text>
-      </TouchableOpacity>
+     </TouchableOpacity>
+
     </View>
   );
 };

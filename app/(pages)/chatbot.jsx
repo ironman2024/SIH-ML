@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Dimensions, KeyboardAvoidingView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Dimensions, KeyboardAvoidingView, Keyboard } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 
 const Chatbot = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
-  const [isTyping, setIsTyping] = useState(true); // For typing indicator
+  const [isTyping, setIsTyping] = useState(false);
   const scrollViewRef = useRef();
 
   useEffect(() => {
@@ -16,15 +16,30 @@ const Chatbot = () => {
         { text: 'Hello, Farmer! 👩‍🌾👨‍🌾\nI’m your virtual assistant, here to help you keep your crops and animals healthy. 🌾🌿\nWhether you’re worried about strange spots on your plants or your livestock showing unusual signs, I can assist in diagnosing potential diseases.',
           isBot: true }
       ]);
-    }, 2000); // Simulate a typing delay
+    }, 2000);
 
     return () => clearTimeout(timer);
   }, []);
 
+  useEffect(() => {
+    scrollViewRef.current?.scrollToEnd({ animated: true });
+  }, [messages]);
+
   const handleSend = () => {
     if (input.trim()) {
-      setMessages([...messages, { text: input, isBot: false }]);
+      setMessages((prev) => [...prev, { text: input, isBot: false }]);
       setInput('');
+      Keyboard.dismiss(); // Dismiss keyboard
+
+      // Simulate bot response
+      setIsTyping(true);
+      setTimeout(() => {
+        setIsTyping(false);
+        setMessages((prev) => [
+          ...prev,
+          { text: 'Thank you for your message! I’ll look into that.', isBot: true }
+        ]);
+      }, 1500); // Simulated delay for bot response
     }
   };
 
@@ -34,7 +49,6 @@ const Chatbot = () => {
         style={styles.messageContainer}
         contentContainerStyle={{ paddingBottom: 20 }}
         ref={scrollViewRef}
-        onContentSizeChange={() => scrollViewRef.current.scrollToEnd({ animated: true })}
       >
         {messages.map((message, index) => (
           <View key={index} style={[styles.messageBubble, message.isBot ? styles.botMessage : styles.userMessage]}>
@@ -61,8 +75,10 @@ const Chatbot = () => {
           placeholder="Type your message..."
           value={input}
           onChangeText={setInput}
+          onSubmitEditing={handleSend} // Allow sending with keyboard return
+          accessibilityLabel="Chat input"
         />
-        <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
+        <TouchableOpacity onPress={handleSend} style={styles.sendButton} accessibilityLabel="Send message">
           <MaterialIcons name={input ? "send" : "mic"} size={24} color="white" />
         </TouchableOpacity>
       </View>
@@ -86,21 +102,21 @@ const styles = StyleSheet.create({
     marginVertical: 5,
   },
   botMessage: {
-    backgroundColor: '#D0EAD0', // Lighter green for bot message
+    backgroundColor: '#D0EAD0',
     alignSelf: 'flex-start',
   },
   userMessage: {
-    backgroundColor: '#4CAF50', // User message background
+    backgroundColor: '#4CAF50',
     alignSelf: 'flex-end',
   },
   messageText: {
-    color: '#fff', // Default text color for user messages
+    color: '#fff',
   },
   botMessageText: {
-    color: '#333', // Dark text for better visibility in bot messages
+    color: '#333',
   },
   userMessageText: {
-    color: '#fff', // Text color for user messages
+    color: '#fff',
   },
   inputContainer: {
     flexDirection: 'row',
@@ -117,7 +133,7 @@ const styles = StyleSheet.create({
   },
   sendButton: {
     marginLeft: 10,
-    backgroundColor: '#4CAF50', // Send button color
+    backgroundColor: '#4CAF50',
     padding: 10,
     borderRadius: 20,
   },
@@ -128,7 +144,7 @@ const styles = StyleSheet.create({
   },
   typingText: {
     fontSize: 14,
-    color: '#4CAF50', // Typing text color
+    color: '#4CAF50',
     marginRight: 5,
   },
   dotContainer: {
@@ -138,7 +154,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#4CAF50', // Dot color
+    backgroundColor: '#4CAF50',
     marginHorizontal: 2,
   },
 });

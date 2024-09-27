@@ -1,11 +1,7 @@
-import { View, Text, TouchableOpacity,ActivityIndicator } from 'react-native';
-import React from 'react';
-import { Link } from "expo-router";
-import { useRouter } from 'expo-router';
-import { useUser } from "@clerk/clerk-expo";
+import { View, ActivityIndicator, Text } from 'react-native';
+import React, { useEffect, useState } from 'react';
 import { Redirect, useRootNavigationState } from "expo-router";
-import { useEffect, useState } from "react";
-
+import { useUser } from "@clerk/clerk-expo";
 
 const Index = () => {
   const { user, isLoaded } = useUser(); // Check if user info is loaded
@@ -13,7 +9,8 @@ const Index = () => {
   const [navLoaded, setNavLoaded] = useState(false);
 
   useEffect(() => {
-    if (rootNavigationState.key) {
+    // Check if navigation state is ready
+    if (rootNavigationState?.key) {
       setNavLoaded(true); // Set state when navigation is loaded
     }
   }, [rootNavigationState]);
@@ -23,24 +20,21 @@ const Index = () => {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" color="#0000ff" />
+        <Text>Loading...</Text> {/* Wrap loading text in a <Text> component */}
       </View>
     );
   }
-  
- 
 
   return (
-    <>
-     <View>
+    <View style={{ flex: 1 }}>
       {user ? (
+        // Redirect to the home tab if the user is logged in
         <Redirect href={'/(tabs)/home'} />
       ) : (
-        <Redirect href={'/Login/LoginScreen'} />
+        // Redirect to the login screen if the user is not logged in
+        <Redirect href={'/(auth)/LoginScreen'} />
       )}
     </View>
-    </>
-    
-    
   );
 };
 
