@@ -35,7 +35,7 @@ const Weather = () => {
         `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&appid=${apiKey}`
       );
       setWeatherData(response.data);
-      console.log(response.data)
+     
       setLoading(false);
     } catch (error) {
       console.log(error);
