@@ -5,6 +5,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Redirect, router } from 'expo-router';
 import { useUser } from '@clerk/clerk-expo';
 
+import Weather from './../../components/weather';
+
 const HomeScreen = () => {
   const { user, isLoaded } = useUser();
   return (
@@ -23,7 +25,7 @@ const HomeScreen = () => {
         <TopSection />
 
         {/* Weather Update Section */}
-        <WeatherUpdate />
+        <Weather/>
 
         {/* Crop Alerts Section */}
         <CropAlerts />

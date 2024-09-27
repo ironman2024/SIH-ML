@@ -58,10 +58,7 @@ export default function Account() {
         <Text style={styles.menuText}>About</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.menuItem} onPress={() => router.push('/community')}>
-        <Icon name="wifi" size={24} color="#000" />
-        <Text style={styles.menuText}>Your Contributions</Text>
-      </TouchableOpacity>
+  
 
       {/* Logout Button */}
       <TouchableOpacity style={styles.logoutButton} onPress={() => alert('Logged Out')}>

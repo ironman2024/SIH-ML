@@ -30,11 +30,12 @@ const Weather = () => {
 
   const fetchWeatherData = async (latitude, longitude) => {
     try {
-      const apiKey = 'YOUR_API_KEY'; // Replace with your weather API key
+      const apiKey = 'f69a5c6f8fdc2758491268e1a99bb165'; // Replace with your weather API key
       const response = await axios.get(
         `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&appid=${apiKey}`
       );
       setWeatherData(response.data);
+      console.log(response.data)
       setLoading(false);
     } catch (error) {
       console.log(error);

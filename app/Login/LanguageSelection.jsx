@@ -2,11 +2,12 @@
 import { useUser } from '@clerk/clerk-expo';
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 const LanguageSelection = () => {
 
   const { user, isLoaded } = useUser();
-  
+  const navigation = useNavigation();
   
   const [selectedLanguage, setSelectedLanguage] = useState(null);
 
@@ -16,6 +17,9 @@ const LanguageSelection = () => {
     setSelectedLanguage(language);
   };
 
+  const handleNextPress = () => {
+    navigation.navigate('/(tabs)/home'); // Redirect to 'home' inside '(tabs)' folder
+  };
   return (
     <View style={styles.container}>
       <Text style={styles.welcomeText}>Welcome </Text>
@@ -43,9 +47,11 @@ const LanguageSelection = () => {
           </TouchableOpacity>
         ))}
       </ScrollView>
-      <TouchableOpacity>
-        <Text style={styles.buttonText}>Next</Text>
-      </TouchableOpacity>
+      <Button 
+        title="Next" 
+        onPress={handleNextPress} 
+        color="#347928" // Custom button color
+      />
       {selectedLanguage && <Text style={styles.selectedText}>You selected: {selectedLanguage}</Text>}
     </View>
   );
